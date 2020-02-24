@@ -3,23 +3,20 @@ var Modal = (function() {
 		if (!(this instanceof Modal)) { return new Modal(options)}
 
 		// 参数合并			
-		this.options = this.extend({
+		this.options = $.extend({
 			width: 780,
 			height: 500,
-			content: ''
+			content: '',
+			contentId: '',
+			className: ''
 		}, options)
 	}
 
 	Modal.prototype = {
-		extend: function (obj, obj2) {
-			for (var key in obj2) {
-				obj[key] = obj2[key]
-			}
-			return obj
-		},
 		open: function () {
-			var temp_modal = document.createElement('div')
-			temp_modal.setAttribute('class', 'temp-modal')	
+			var temp_modal = $("<div></div>")
+			temp_modal.addClass('temp-modal')
+			temp_modal.addClass(this.options.className)
 
 			var html = '<div class="temp-mask"></div>'
 						+ '<div class="temp-wrap">'
@@ -27,35 +24,45 @@ var Modal = (function() {
 						+ '<div class="temp-content"></div>'
 						+ '</div>'
 
-			temp_modal.innerHTML = html
+			temp_modal.html(html)
 
-			document.body.appendChild(temp_modal)
+			$('body').append(temp_modal)
 			
 			this.setStyle()
-
-			// 将内容添加到temp-content中
-			document.querySelector('.temp-content').innerHTML = this.options.content
-
+			this.setContent()
 			this.setEventListener()
 		},
 		close: function () {
-			var temp_modal = document.querySelector('.temp-modal')
-			document.body.removeChild(temp_modal)	
+			// 将内容放回原来位置
+			$('.temp-content').children().css("display", "none")
+			$("body").append($('.temp-content').children())	
+			//移除模态框
+			$(".temp-modal").remove()
 		},
 		setStyle: function () {
 			// 设置宽高
-			document.querySelector('.temp-wrap').style.width = this.options.width + 'px'
-			document.querySelector('.temp-wrap').style.height = this.options.height + 'px'
+			$('.temp-wrap').css('width', this.options.width + 'px')
+			$('.temp-wrap').css('height', this.options.height + 'px')
 
 			// 根据宽高设置边距 居中
-			document.querySelector('.temp-wrap').style.marginLeft =- parseFloat((this.options.width / 2)) + 'px'
-			document.querySelector('.temp-wrap').style.marginTop =- parseFloat((this.options.height / 2)) - 24 +  'px'
-
+			$('.temp-wrap').css('marginLeft', - parseFloat((this.options.width / 2)) + 'px')
+			$('.temp-wrap').css('marginTop', - parseFloat((this.options.height / 2)) - 24 +  'px')
+		},
+		setContent: function () {
+			// 将内容添加到temp-content中
+			if (this.options.contentId !== '') {
+				content = $(this.options.contentId)
+				content.css('display', 'block')
+				$('.temp-content').append(content)
+				$('.temp-content').scrollUnique()
+			} else {
+				$('.temp-content').html(this.options.content)
+			}
 		},
 		setEventListener: function () {
 			// 为mask和close添加事件监听
-			document.querySelector('.temp-close').onclick = this.close
-			document.querySelector('.temp-mask').onclick = this.close
+			$('.temp-close').click(this.close)
+			$('.temp-mask').click(this.close)
 		}
 	}
 
